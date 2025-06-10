@@ -32,6 +32,43 @@ async function run() {
     const cartsCollection=client.db('bistroDb').collection("cart")
 
 
+  
+    // midlewares 
+    const   verifytoken=(req,res,next)=>{
+    console.log('inside  verifytoken',req.headers.authorization)
+    if(!req.headers.authorization){
+      return res.status(401).send({message:"Forbidden Access"})
+    }
+    const token = req.headers.authorization.split(' ')[1];
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+      if(err){
+        return res.status(401).send({message:'forbidden access'})
+      }
+      req.decoded=decoded;
+      next()
+    })
+    }
+    //  j request dissay sai admin ki na seta check korbo
+    // use verifu admin after verify token
+    const verifyAdmin=async(req,res,next)=>{
+    const email=req.decoded.email;
+    const query={email:email};
+    const user=await userCollection.findOne(query);
+    const isAdmin=user?.role==='admin';
+    if(!isAdmin){
+      return res.status(403).send({message:'forBidden access'})
+    }
+    next()
+    }
+    
+    // user backend thakay collect koray show
+    // user related api
+    app.get("/user", verifytoken,verifyAdmin,async(req,res)=>{
+      
+      const result=await userCollection.find().toArray()
+      res.send(result);
+    })
+
 
     // first part
   //  menu data get
@@ -39,11 +76,37 @@ async function run() {
         const result=await menuCollection.find().toArray();
         res.send(result)
     })
+    // add item ar cart gula menu item a ad
     app.post('/menu',verifytoken,verifyAdmin,async(req,res)=>{
       const item=req.body;
       const result=await menuCollection.insertOne(item);
       res.send(result)
     })
+    // manage all item thakay menu ar data delete
+    app.delete("/menu/:id",verifytoken,verifyAdmin,async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)}
+      const result= await menuCollection.deleteOne(query);
+      res.send(result)
+    })
+    // manage all item update
+    app.get('/menu/:id',verifytoken,verifyAdmin,async(req,res)=>{
+ const id=req.params.id;
+ const query={_id:new ObjectId(id)}
+  const result=await menuCollection.findOne(query)
+  res.send(result)
+  
+    })
+    // PUT /menu/:id
+app.put('/menu/:id', async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+  const result = await menuCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updatedData }
+  );
+  res.send(result);
+});
     // review data get
     app.get("/review",async(req,res)=>{
         const result=await reviewCollection.find().toArray();
@@ -84,42 +147,8 @@ app.post("/user",async(req,res)=>{
   const result=await userCollection.insertOne(user);
   res.send(result)
 })
-// second part
-// midlewares 
-const   verifytoken=(req,res,next)=>{
-console.log('inside  verifytoken',req.headers.authorization)
-if(!req.headers.authorization){
-  return res.status(401).send({message:"Forbidden Access"})
-}
-const token = req.headers.authorization.split(' ')[1];
-jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
-  if(err){
-    return res.status(401).send({message:'forbidden access'})
-  }
-  req.decoded=decoded;
-  next()
-})
-}
-//  j request dissay sai admin ki na seta check korbo
-// use verifu admin after verify token
-const verifyAdmin=async(req,res,next)=>{
-const email=req.decoded.email;
-const query={email:email};
-const user=await userCollection.findOne(query);
-const isAdmin=user?.role==='admin';
-if(!isAdmin){
-  return res.status(403).send({message:'forBidden access'})
-}
-next()
-}
 
-// user backend thakay collect koray show
-// user related api
-app.get("/user", verifytoken,verifyAdmin,async(req,res)=>{
-  
-  const result=await userCollection.find().toArray()
-  res.send(result);
-})
+
 // menu related apis user delete
  app.delete('/user/:id',verifytoken,verifyAdmin,async(req,res)=>{
   const id=req.params.id;
