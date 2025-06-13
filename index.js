@@ -27,12 +27,13 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const userCollection=client.db('bistroDb').collection("user")
     const menuCollection=client.db('bistroDb').collection("menu")
     const reviewCollection=client.db('bistroDb').collection("review")
     const cartsCollection=client.db('bistroDb').collection("cart")
     const paymentCollection=client.db('bistroDb').collection("payments")
+    const contactCollection=client.db('bistroDb').collection("contact")
 
 
   
@@ -159,6 +160,17 @@ app.post("/user",async(req,res)=>{
   const result=await userCollection.deleteOne(query);
   res.send(result)
  })
+//   contact us thakay data patabo
+app.post("/contact",async(req,res)=>{
+  const contactItem=req.body;
+ const result=await contactCollection.insertOne(contactItem);
+ res.send(result);
+})
+// contact use ar data manage booking a get korbo
+app.get("/contact",async(req,res)=>{
+  const result=await contactCollection.find().toArray();
+  res.send(result)
+})
 //  admin ar jonno backend a api create
 app.patch("/user/admin/:id",verifytoken,verifyAdmin,async(req,res)=>{
 const id=req.params.id;
@@ -287,8 +299,8 @@ app.get("/order-stats",verifytoken,verifyAdmin, async (req, res) => {
 });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
