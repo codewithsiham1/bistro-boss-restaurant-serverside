@@ -9,7 +9,13 @@ const port=process.env.PORT||5000;
 // DB_USER=bossuser
 // DB_PASS=cwbKfVaM9t17F6SQ
 // middleware
-app.use(cors());
+// Correct CORS options
+const corsOption = {
+  origin: ['http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOption));
 app.use(express.json())
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
