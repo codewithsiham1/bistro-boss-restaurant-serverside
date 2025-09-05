@@ -12,8 +12,8 @@ const port=process.env.PORT||5000;
 // Correct CORS options
 const corsOption = {
   origin: [
-    'http://localhost:5173', // for local dev
-    'https://resshop-a427b.web.app' // for deployed frontend
+    'http://localhost:5173', 
+    'https://resshop-a427b.web.app' 
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
